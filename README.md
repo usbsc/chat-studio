@@ -2,16 +2,19 @@
 
 A ChatGPT-like web interface for collaborative creative work with AI models. Upload images, chat with your AI model, and build on ideas together.
 
-## 🆓 **FREE to use with Google Gemini API** - No payment required!
+## 🆓 **FREE to use - No payment required!**
 
 ## ⚡ Quick Start (2 minutes)
 
-1. **Get FREE API Key**: Go to https://makersuite.google.com/app/apikey and click "Create API Key"
+1. **Get FREE API Token**: Go to https://huggingface.co/settings/tokens
+   - Sign up for a free Hugging Face account (takes 1 minute)
+   - Click "New token"
+   - Copy the token
 2. **Open Chat Studio**: Visit https://usbsc.github.io/chat-studio/
-3. **Paste your key**: Paste the API key into the sidebar
+3. **Paste your token**: Paste into the "API Key" field
 4. **Start chatting**: Type your message and hit Enter!
 
-That's it! No credit card, no payment, completely free. 🎉
+That's it! No credit card, completely free. 🎉
 
 ## 🎨 Features
 
@@ -71,12 +74,19 @@ That's it! No credit card, no payment, completely free. 🎉
 
 ## 🔑 API Configuration
 
-### 🆓 Google Gemini (FREE - Recommended!)
-- **Provider**: Google Gemini (default)
-- **API Key**: Get FREE at https://makersuite.google.com/app/apikey
-- **Model**: gemini-pro (default)
+### 🆓 Hugging Face (FREE - Recommended!)
+- **Provider**: Hugging Face (default)
+- **API Token**: Get FREE at https://huggingface.co/settings/tokens
+- **Model**: mistralai/Mistral-7B-Instruct-v0.1 (default, very capable)
 - **Cost**: Completely free, no payment required!
-- **Endpoint**: Leave blank (uses default)
+- **Why use it**: Works in browsers without CORS issues
+
+### 🆓 Google Gemini (FREE - Alternative)
+- **Provider**: Google Gemini
+- **API Key**: Get FREE at https://makersuite.google.com/app/apikey
+- **Model**: gemini-pro
+- **Cost**: Completely free
+- **Note**: May have CORS issues with some browsers
 
 ### OpenAI
 - **Provider**: OpenAI
