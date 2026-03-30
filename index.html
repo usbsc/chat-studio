@@ -528,7 +528,7 @@
                 <div class="settings-label">API Configuration</div>
                 <select class="settings-select" id="modelProvider" onchange="saveSettings()">
                     <option value="huggingface">🆓 Hugging Face (FREE - Recommended!)</option>
-                    <option value="gemini">Google Gemini (FREE - CORS issues)</option>
+                    <option value="gemini">Google Gemini (FREE - Works with proxy)</option>
                     <option value="openai">OpenAI (Paid)</option>
                     <option value="claude">Claude (Paid)</option>
                     <option value="local">Local/Custom</option>
@@ -536,7 +536,8 @@
                 <input type="password" class="settings-input" id="apiKey" placeholder="API Key" onchange="saveSettings()">
                 <input type="text" class="settings-input" id="model" placeholder="Model" value="mistralai/Mistral-7B-Instruct-v0.1" onchange="saveSettings()">
                 <input type="text" class="settings-input" id="apiEndpoint" placeholder="API Endpoint (optional)" onchange="saveSettings()">
-                <small style="color: #999; margin-top: 8px; display: block;">💡 Get FREE API token at: <a href="https://huggingface.co/settings/tokens" target="_blank" style="color: #0ea5e9;">huggingface.co/tokens</a></small>
+                <input type="text" class="settings-input" id="proxyUrl" placeholder="CORS Proxy (for Gemini)" onchange="saveSettings()" style="font-size: 11px;">
+                <small style="color: #999; margin-top: 8px; display: block;">💡 Hugging Face: <a href="https://huggingface.co/settings/tokens" target="_blank" style="color: #0ea5e9;">get token</a> | Gemini: <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #0ea5e9;">get key</a> + <a href="https://replit.com" target="_blank" style="color: #0ea5e9;">use Replit backend</a></small>
             </div>
 
             <div class="settings-section">
@@ -597,6 +598,7 @@
             apiKey: '',
             model: 'mistralai/Mistral-7B-Instruct-v0.1',
             apiEndpoint: '',
+            proxyUrl: '',
             systemPrompt: ''
         };
 
@@ -617,6 +619,7 @@
                 document.getElementById('apiKey').value = settings.apiKey;
                 document.getElementById('model').value = settings.model;
                 document.getElementById('apiEndpoint').value = settings.apiEndpoint;
+                document.getElementById('proxyUrl').value = settings.proxyUrl || '';
                 document.getElementById('systemPrompt').value = settings.systemPrompt;
             }
         }
@@ -627,6 +630,7 @@
                 apiKey: document.getElementById('apiKey').value,
                 model: document.getElementById('model').value,
                 apiEndpoint: document.getElementById('apiEndpoint').value,
+                proxyUrl: document.getElementById('proxyUrl').value || '',
                 systemPrompt: document.getElementById('systemPrompt').value
             };
             localStorage.setItem('chatStudioSettings', JSON.stringify(settings));
@@ -937,11 +941,12 @@
                 throw new Error('Please enter your Google Gemini API key. Get it free at: makersuite.google.com/app/apikey');
             }
 
-            // Note: Using native fetch - browser CORS might restrict this
-            // If you get a CORS error, the API key format may be wrong
-            // Verify at: https://makersuite.google.com/app/apikey
+            let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${settings.model}:generateContent?key=${apiKey}`;
             
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${settings.model}:generateContent?key=${apiKey}`;
+            // If proxy URL is set, use it
+            if (settings.proxyUrl) {
+                endpoint = settings.proxyUrl + `?model=${settings.model}&key=${apiKey}`;
+            }
             
             // Build conversation history
             const contents = [
@@ -983,7 +988,7 @@
                 throw new Error('No response from Gemini API');
             } catch (error) {
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    throw new Error('Network error: This might be a CORS issue. Try using OpenAI or Claude instead, or check that your API key is correct.');
+                    throw new Error('CORS error: Use Hugging Face instead, or set up a Replit proxy backend and enter its URL in the "CORS Proxy" field.');
                 }
                 throw error;
             }
