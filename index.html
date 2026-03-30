@@ -877,6 +877,10 @@
                 throw new Error('Please enter your Google Gemini API key. Get it free at: makersuite.google.com/app/apikey');
             }
 
+            // Note: Using native fetch - browser CORS might restrict this
+            // If you get a CORS error, the API key format may be wrong
+            // Verify at: https://makersuite.google.com/app/apikey
+            
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${settings.model}:generateContent?key=${apiKey}`;
             
             // Build conversation history
@@ -888,34 +892,41 @@
                 { role: 'user', parts: [{ text: userMessage }] }
             ];
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    contents: contents,
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 2000,
-                        topP: 0.95,
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    systemInstruction: {
-                        parts: [{ text: systemPrompt }]
-                    }
-                })
-            });
+                    body: JSON.stringify({
+                        contents: contents,
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 2000,
+                            topP: 0.95,
+                        },
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        }
+                    })
+                });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'Gemini API request failed');
-            }
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `API Error: ${response.status}`);
+                }
 
-            const data = await response.json();
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text;
+                const data = await response.json();
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    return data.candidates[0].content.parts[0].text;
+                }
+                throw new Error('No response from Gemini API');
+            } catch (error) {
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error('Network error: This might be a CORS issue. Try using OpenAI or Claude instead, or check that your API key is correct.');
+                }
+                throw error;
             }
-            throw new Error('No response from Gemini API');
         }
 
         async function callOpenAI(userMessage, previousMessages, systemPrompt) {
