@@ -716,16 +716,39 @@
                     </div>
                 `;
             } else {
-                messagesDiv.innerHTML = chat.messages.map(msg => `
-                    <div class="message ${msg.role}">
-                        <div class="message-avatar">${msg.role === 'user' ? 'U' : 'AI'}</div>
-                        <div class="message-content">
-                            ${msg.images && msg.images.length > 0 ? msg.images.map(img => `<img src="${img}" class="message-image" onclick="openImageModal('${img}')">`).join('') : ''}
-                            ${msg.text ? `<div class="message-text">${msg.text}</div>` : ''}
-                            ${msg.error ? `<div class="error">${msg.error}</div>` : ''}
+                messagesDiv.innerHTML = chat.messages.map((msg, idx) => {
+                    if (msg.loading) {
+                        return `
+                            <div class="message assistant">
+                                <div class="message-avatar">AI</div>
+                                <div class="message-content">
+                                    <div class="loading">
+                                        <div class="loading-dot"></div>
+                                        <div class="loading-dot"></div>
+                                        <div class="loading-dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    return `
+                        <div class="message ${msg.role}">
+                            <div class="message-avatar">${msg.role === 'user' ? 'U' : 'AI'}</div>
+                            <div class="message-content">
+                                ${msg.images && msg.images.length > 0 ? msg.images.map((img, i) => `<img src="${img}" class="message-image" data-idx="${idx}-${i}">`).join('') : ''}
+                                ${msg.text ? `<div class="message-text">${msg.text}</div>` : ''}
+                                ${msg.error ? `<div class="error">${msg.error}</div>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
+                
+                // Add event listeners for images
+                document.querySelectorAll('.message-image').forEach(img => {
+                    img.addEventListener('click', function() {
+                        openImageModal(this.src);
+                    });
+                });
                 
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
