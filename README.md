@@ -2,6 +2,17 @@
 
 A ChatGPT-like web interface for collaborative creative work with AI models. Upload images, chat with your AI model, and build on ideas together.
 
+## 🆓 **FREE to use with Google Gemini API** - No payment required!
+
+## ⚡ Quick Start (2 minutes)
+
+1. **Get FREE API Key**: Go to https://makersuite.google.com/app/apikey and click "Create API Key"
+2. **Open Chat Studio**: Visit https://usbsc.github.io/chat-studio/
+3. **Paste your key**: Paste the API key into the sidebar
+4. **Start chatting**: Type your message and hit Enter!
+
+That's it! No credit card, no payment, completely free. 🎉
+
 ## 🎨 Features
 
 - **Clean ChatGPT-style Interface**
@@ -60,16 +71,25 @@ A ChatGPT-like web interface for collaborative creative work with AI models. Upl
 
 ## 🔑 API Configuration
 
+### 🆓 Google Gemini (FREE - Recommended!)
+- **Provider**: Google Gemini (default)
+- **API Key**: Get FREE at https://makersuite.google.com/app/apikey
+- **Model**: gemini-pro (default)
+- **Cost**: Completely free, no payment required!
+- **Endpoint**: Leave blank (uses default)
+
 ### OpenAI
 - **Provider**: OpenAI
 - **API Key**: Get from https://platform.openai.com/account/api-keys
 - **Model**: gpt-4, gpt-4-turbo, gpt-3.5-turbo, etc.
+- **Cost**: Paid (requires payment method)
 - **Endpoint**: Leave blank (uses default)
 
 ### Claude (Anthropic)
 - **Provider**: Claude
 - **API Key**: Get from https://console.anthropic.com/
 - **Model**: claude-3-opus, claude-3-sonnet, etc.
+- **Cost**: Paid (requires payment method)
 - **Endpoint**: Leave blank (uses default)
 
 ### Custom Endpoint
