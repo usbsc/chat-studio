@@ -527,13 +527,15 @@
             <div class="settings-section">
                 <div class="settings-label">API Configuration</div>
                 <select class="settings-select" id="modelProvider" onchange="saveSettings()">
+                    <option value="gemini">🆓 Google Gemini (FREE)</option>
                     <option value="openai">OpenAI</option>
                     <option value="claude">Claude (Anthropic)</option>
                     <option value="local">Local/Custom</option>
                 </select>
                 <input type="password" class="settings-input" id="apiKey" placeholder="API Key" onchange="saveSettings()">
-                <input type="text" class="settings-input" id="model" placeholder="Model (e.g., gpt-4)" value="gpt-4-turbo" onchange="saveSettings()">
+                <input type="text" class="settings-input" id="model" placeholder="Model (e.g., gemini-pro)" value="gemini-pro" onchange="saveSettings()">
                 <input type="text" class="settings-input" id="apiEndpoint" placeholder="API Endpoint (optional)" onchange="saveSettings()">
+                <small style="color: #999; margin-top: 8px; display: block;">💡 Get FREE Gemini API key at: <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #0ea5e9;">makersuite.google.com/apikey</a></small>
             </div>
 
             <div class="settings-section">
@@ -590,9 +592,9 @@
         let chats = {};
         let uploadedImages = [];
         let settings = {
-            modelProvider: 'openai',
+            modelProvider: 'gemini',
             apiKey: '',
-            model: 'gpt-4-turbo',
+            model: 'gemini-pro',
             apiEndpoint: '',
             systemPrompt: ''
         };
@@ -858,13 +860,62 @@
         async function callAI(userMessage, previousMessages) {
             const systemPrompt = settings.systemPrompt || 'You are a helpful creative AI assistant.';
             
-            if (settings.modelProvider === 'openai') {
+            if (settings.modelProvider === 'gemini') {
+                return await callGemini(userMessage, previousMessages, systemPrompt);
+            } else if (settings.modelProvider === 'openai') {
                 return await callOpenAI(userMessage, previousMessages, systemPrompt);
             } else if (settings.modelProvider === 'claude') {
                 return await callClaude(userMessage, previousMessages, systemPrompt);
             } else {
                 throw new Error('Please select a valid model provider');
             }
+        }
+
+        async function callGemini(userMessage, previousMessages, systemPrompt) {
+            const apiKey = settings.apiKey;
+            if (!apiKey) {
+                throw new Error('Please enter your Google Gemini API key. Get it free at: makersuite.google.com/app/apikey');
+            }
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${settings.model}:generateContent?key=${apiKey}`;
+            
+            // Build conversation history
+            const contents = [
+                ...previousMessages.filter(m => !m.loading).map(m => ({
+                    role: m.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: m.text }]
+                })),
+                { role: 'user', parts: [{ text: userMessage }] }
+            ];
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: contents,
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 2000,
+                        topP: 0.95,
+                    },
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error?.message || 'Gemini API request failed');
+            }
+
+            const data = await response.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text;
+            }
+            throw new Error('No response from Gemini API');
         }
 
         async function callOpenAI(userMessage, previousMessages, systemPrompt) {
