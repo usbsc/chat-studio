@@ -928,8 +928,8 @@
                 }
                 throw new Error('Unexpected response format from Hugging Face');
             } catch (error) {
-                if (error.message.includes('Failed to fetch')) {
-                    throw new Error('Network error: Check your API token and try again.');
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error('Network error: Check your API token, model name, and internet connection.');
                 }
                 throw error;
             }
@@ -1006,27 +1006,34 @@
                 { role: 'user', content: userMessage }
             ];
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${settings.apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: settings.model,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 2000
-                })
-            });
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${settings.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: settings.model,
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    })
+                });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API request failed');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error('Network error: Check your API key, endpoint URL, and internet connection.');
+                }
+                throw error;
             }
-
-            const data = await response.json();
-            return data.choices[0].message.content;
         }
 
         async function callClaude(userMessage, previousMessages, systemPrompt) {
@@ -1038,28 +1045,35 @@
             }));
             messages.push({ role: 'user', content: userMessage });
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'x-api-key': settings.apiKey,
-                    'anthropic-version': '2023-06-01',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: settings.model,
-                    max_tokens: 2000,
-                    system: systemPrompt,
-                    messages: messages
-                })
-            });
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': settings.apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: settings.model,
+                        max_tokens: 2000,
+                        system: systemPrompt,
+                        messages: messages
+                    })
+                });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API request failed');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.content[0].text;
+            } catch (error) {
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error('Network error: Check your API key, endpoint URL, and internet connection.');
+                }
+                throw error;
             }
-
-            const data = await response.json();
-            return data.content[0].text;
         }
 
         // Image Modal
