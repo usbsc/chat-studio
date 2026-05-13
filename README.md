@@ -1,4 +1,4 @@
-# Chat Studio - AI Creative Studio
+# Chat Studio - AI Creative Studio (DEPRECATED)
 
 A ChatGPT-like web interface for collaborative creative work with AI models. Upload images, chat with your AI model, and build on ideas together.
 
